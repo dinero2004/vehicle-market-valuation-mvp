@@ -70,8 +70,13 @@ export default {
 
     const responseHeaders = copyHeaders(upstreamResponse.headers);
     responseHeaders.set("x-proxied-by", "vercel");
+    const responseBody = request.method === "HEAD"
+      || upstreamResponse.status === 204
+      || upstreamResponse.status === 304
+      ? undefined
+      : await upstreamResponse.arrayBuffer();
 
-    return new Response(upstreamResponse.body, {
+    return new Response(responseBody, {
       status: upstreamResponse.status,
       headers: responseHeaders
     });
