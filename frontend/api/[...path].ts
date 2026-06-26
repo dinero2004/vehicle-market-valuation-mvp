@@ -70,11 +70,19 @@ export default {
 
     const responseHeaders = copyHeaders(upstreamResponse.headers);
     responseHeaders.set("x-proxied-by", "vercel");
-    const responseBody = request.method === "HEAD"
-      || upstreamResponse.status === 204
-      || upstreamResponse.status === 304
-      ? undefined
-      : await upstreamResponse.arrayBuffer();
+    const contentType = upstreamResponse.headers.get("content-type") ?? "";
+    let responseBody: BodyInit | undefined;
+
+    if (
+      request.method !== "HEAD"
+      && upstreamResponse.status !== 204
+      && upstreamResponse.status !== 304
+    ) {
+      responseBody = contentType.includes("application/json")
+        || contentType.startsWith("text/")
+        ? await upstreamResponse.text()
+        : new Uint8Array(await upstreamResponse.arrayBuffer());
+    }
 
     return new Response(responseBody, {
       status: upstreamResponse.status,
