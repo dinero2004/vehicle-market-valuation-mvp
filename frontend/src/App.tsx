@@ -134,7 +134,13 @@ type ManualVehicleForm = {
 type AppMode = "inventory" | "manual";
 type LoadState = "idle" | "loading" | "ready" | "error";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+const fallbackApiBaseUrl = typeof window !== "undefined"
+  && window.location.hostname !== "localhost"
+  && window.location.hostname !== "127.0.0.1"
+  ? "https://vehicle-market-valuation-backend.onrender.com"
+  : "";
+const API_BASE_URL = (configuredApiBaseUrl ?? fallbackApiBaseUrl).replace(/\/$/, "");
 
 const currencyFormatter = new Intl.NumberFormat("de-CH", {
   style: "currency",
